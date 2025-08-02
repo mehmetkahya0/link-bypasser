@@ -35,7 +35,7 @@ LinkBypass Pro provides comprehensive coverage for major URL shortening platform
 
 ### Local Development
 ```bash
-git clone https://github.com/yourusername/link-bypasser.git
+git clone https://github.com/mehmetkahya0/link-bypasser.git
 cd link-bypasser
 
 # Start local server (choose one):

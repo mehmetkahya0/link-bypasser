@@ -49,8 +49,29 @@ class ModernLinkBypass {
                 }
             },
             {
+                name: 'CORS Anywhere',
+                url: 'https://cors-anywhere.herokuapp.com/',
+                extract: async (response) => {
+                    return await response.text();
+                }
+            },
+            {
                 name: 'ThingProxy',
                 url: 'https://thingproxy.freeboard.io/fetch/',
+                extract: async (response) => {
+                    return await response.text();
+                }
+            },
+            {
+                name: 'Proxy Cors',
+                url: 'https://proxy-cors.herokuapp.com/',
+                extract: async (response) => {
+                    return await response.text();
+                }
+            },
+            {
+                name: 'CORS Proxy',
+                url: 'https://cors-proxy.htmldriven.com/?url=',
                 extract: async (response) => {
                     return await response.text();
                 }
@@ -59,7 +80,6 @@ class ModernLinkBypass {
                 name: 'Local Fallback',
                 url: 'data:text/html,',
                 extract: async (response) => {
-                    // This is a fallback that uses a different approach
                     return '<html><body>Fallback content</body></html>';
                 }
             }
@@ -127,6 +147,8 @@ class ModernLinkBypass {
                     return await this.bypassYouTube(url);
                 } else if (domain.includes('t.co')) {
                     return await this.bypassTwitter(url);
+                } else if (domain.includes('aylink.co')) {
+                    return await this.bypassAylink(url);
                 }
 
                 throw new Error('Service not specifically supported');
@@ -391,6 +413,127 @@ class ModernLinkBypass {
         return await this.bypassMethods.htmlMetaRedirect(url);
     }
 
+    async bypassAylink(url) {
+        console.log('🔗 Bypassing aylink.co link...');
+        
+        try {
+            // Method 1: Try direct fetch first (sometimes works due to CORS policy)
+            try {
+                console.log('🔄 Attempting direct fetch...');
+                const directResponse = await this.fetchWithTimeout(url, 3000);
+                if (directResponse.ok) {
+                    const html = await directResponse.text();
+                    const redirectUrl = this.extractAylinkRedirect(html);
+                    if (redirectUrl) {
+                        console.log('✅ Found aylink.co direct redirect:', redirectUrl);
+                        return redirectUrl;
+                    }
+                }
+            } catch (error) {
+                console.warn('Direct fetch failed:', error.message);
+            }
+
+            // Method 2: Try to get the page content using proxies
+            for (const proxy of this.workingProxies) {
+                try {
+                    console.log(`🔄 Trying ${proxy.name}...`);
+                    const proxyUrl = proxy.url + encodeURIComponent(url);
+                    const response = await this.fetchWithTimeout(proxyUrl, 5000);
+                    
+                    if (response.ok) {
+                        const html = await proxy.extract(response);
+                        const redirectUrl = this.extractAylinkRedirect(html);
+                        
+                        if (redirectUrl) {
+                            console.log('✅ Found aylink.co redirect via', proxy.name + ':', redirectUrl);
+                            return redirectUrl;
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`aylink.co ${proxy.name} failed:`, error.message);
+                }
+            }
+
+            // Method 3: Try common aylink.co API endpoints
+            try {
+                console.log('🔄 Trying aylink.co API approach...');
+                const linkId = url.split('/').pop();
+                const apiUrls = [
+                    `https://aylink.co/api/link/${linkId}`,
+                    `https://aylink.co/api/v1/link/${linkId}`,
+                    `https://aylink.co/api/redirect/${linkId}`
+                ];
+
+                for (const apiUrl of apiUrls) {
+                    try {
+                        const response = await this.fetchWithTimeout(apiUrl, 3000);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.url || data.redirect_url || data.target_url || data.destination) {
+                                const foundUrl = data.url || data.redirect_url || data.target_url || data.destination;
+                                if (this.isValidUrl(foundUrl)) {
+                                    console.log('✅ Found aylink.co API redirect:', foundUrl);
+                                    return foundUrl;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`API ${apiUrl} failed:`, error.message);
+                    }
+                }
+            } catch (error) {
+                console.warn('API approach failed:', error.message);
+            }
+
+        } catch (error) {
+            console.warn('aylink.co bypass failed:', error.message);
+        }
+
+        throw new Error('aylink.co bypass failed - could not find redirect target');
+    }
+
+    extractAylinkRedirect(html) {
+        // Enhanced patterns for aylink.co redirects
+        const patterns = [
+            // Look for direct links in HTML
+            /<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*class\s*=\s*["'][^"']*btn[^"']*["']/i,
+            /<a[^>]+class\s*=\s*["'][^"']*btn[^"']*["'][^>]*href\s*=\s*["']([^"']+)["']/i,
+            /<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*class\s*=\s*["'][^"']*download[^"']*["']/i,
+            /<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*class\s*=\s*["'][^"']*continue[^"']*["']/i,
+            // Look for meta redirects
+            /<meta[^>]+http-equiv\s*=\s*["']refresh["'][^>]+content\s*=\s*["'][^;]*;\s*url\s*=\s*([^"'>\s]+)/i,
+            // Look for JavaScript redirects
+            /window\.location\.href\s*=\s*["']([^"']+)["']/i,
+            /window\.location\s*=\s*["']([^"']+)["']/i,
+            /document\.location\s*=\s*["']([^"']+)["']/i,
+            /location\.href\s*=\s*["']([^"']+)["']/i,
+            // Look for data attributes
+            /data-url\s*=\s*["']([^"']+)["']/i,
+            /data-link\s*=\s*["']([^"']+)["']/i,
+            /data-redirect\s*=\s*["']([^"']+)["']/i,
+            // Look for form actions
+            /<form[^>]+action\s*=\s*["']([^"']+)["']/i,
+            // Look for onclick handlers
+            /onclick\s*=\s*["'][^"']*window\.open\s*\(\s*["']([^"']+)["']/i,
+            /onclick\s*=\s*["'][^"']*location\.href\s*=\s*["']([^"']+)["']/i,
+            // Look for skip countdown patterns
+            /<div[^>]*class\s*=\s*["'][^"']*countdown[^"']*["'][^>]*data-url\s*=\s*["']([^"']+)["']/i,
+            /<span[^>]*data-redirect\s*=\s*["']([^"']+)["']/i
+        ];
+        
+        for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match && match[1] && this.isValidUrl(match[1])) {
+                const foundUrl = decodeURIComponent(match[1]);
+                if (!foundUrl.includes('aylink.co')) {
+                    return foundUrl;
+                }
+            }
+        }
+        
+        return null;
+    }
+
     extractMetaRedirect(html) {
         const patterns = [
             /<meta[^>]+http-equiv\s*=\s*["']refresh["'][^>]+content\s*=\s*["'][^;]*;\s*url\s*=\s*([^"'>\s]+)/i,
@@ -433,14 +576,26 @@ class ModernLinkBypass {
         try {
             const response = await fetch(url, {
                 signal: controller.signal,
+                method: 'GET',
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                },
+                mode: 'cors',
+                credentials: 'omit',
+                redirect: 'follow'
             });
             clearTimeout(timeoutId);
             return response;
         } catch (error) {
             clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout');
+            }
             throw error;
         }
     }
@@ -549,7 +704,7 @@ class ModernLinkBypass {
                 'bit.ly', 'tinyurl.com', 't.co', 'short.link', 'ow.ly',
                 'is.gd', 'buff.ly', 'soo.gd', 'x.co', 'mcaf.ee',
                 'v.gd', 'goo.gl', 'youtu.be', 'amzn.to', 'fb.me',
-                'cutt.ly', 'rb.gy', 'tiny.one', 'short.io'
+                'cutt.ly', 'rb.gy', 'tiny.one', 'short.io', 'aylink.co'
             ];
             
             return !shortenerDomains.some(shortener => 
