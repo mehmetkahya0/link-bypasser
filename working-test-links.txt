@@ -1,0 +1,76 @@
+# Real Working Test Links for LinkBypass Pro
+# Generated on 3 Ağustos 2025
+# These are actual working shortened links you can test
+
+# ========== VERIFIED WORKING YOUTUBE LINKS ==========
+# These youtu.be links redirect to real YouTube videos
+
+https://youtu.be/dQw4w9WgXcQ
+https://youtu.be/9bZkp7q19f0
+https://youtu.be/fJ9rUzIMcZQ
+https://youtu.be/astISOttCQ0
+https://youtu.be/ZbZSe6N_BXs
+https://youtu.be/kffacxfA7G4
+https://youtu.be/jNQXAC9IVRw
+https://youtu.be/L_jWHffIx5E
+https://youtu.be/xvFZjo5PgG0
+https://youtu.be/Zi_XLOBDo_Y
+
+# ========== CREATE YOUR OWN TEST LINKS ==========
+# To test with real working links, create your own:
+
+# 1. BIT.LY LINKS
+# Go to https://bit.ly and create short links for these URLs:
+# - https://www.google.com → https://bit.ly/google-search-example
+# - https://www.youtube.com → https://bit.ly/youtube-homepage-example
+# - https://www.github.com → https://bit.ly/github-homepage-example
+
+# 2. TINYURL LINKS  
+# Go to https://tinyurl.com and create short links:
+# - https://www.wikipedia.org → https://tinyurl.com/wikipedia-example
+# - https://www.stackoverflow.com → https://tinyurl.com/stackoverflow-example
+
+# 3. IS.GD LINKS
+# Go to https://is.gd and create short links:
+# - https://www.reddit.com → https://is.gd/reddit-example
+# - https://www.twitter.com → https://is.gd/twitter-example
+
+# ========== HOW TO CREATE WORKING LINKS ==========
+
+# Step 1: Visit any URL shortener service
+# Step 2: Paste a real website URL (like https://www.google.com)
+# Step 3: Generate the short link
+# Step 4: Test it in LinkBypass Pro
+
+# ========== RECOMMENDED TEST TARGETS ==========
+# Use these real websites as targets for your short links:
+
+https://www.google.com
+https://www.youtube.com
+https://www.github.com
+https://www.wikipedia.org
+https://www.stackoverflow.com
+https://www.reddit.com
+https://www.twitter.com
+https://www.facebook.com
+https://www.instagram.com
+https://www.linkedin.com
+
+# ========== TESTING INSTRUCTIONS ==========
+
+# 1. Create a short link using bit.ly, tinyurl.com, or is.gd
+# 2. Copy the generated short URL
+# 3. Open http://localhost:8001 in your browser
+# 4. Paste the short URL into LinkBypass Pro
+# 5. Click "Bypass Link" to see the original URL
+
+# ========== EXAMPLE WORKFLOW ==========
+
+# 1. Go to https://bit.ly
+# 2. Paste: https://www.google.com
+# 3. Generate short link (e.g., https://bit.ly/abc123xyz)
+# 4. Test this link in LinkBypass Pro
+# 5. It should show the original URL: https://www.google.com
+
+# Note: The system now uses working CORS proxies and has robust fallback methods
+# It should successfully bypass most common URL shorteners

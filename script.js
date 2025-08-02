@@ -176,13 +176,28 @@ class LinkBypassPro {
             throw new Error('This appears to be a direct link that doesn\'t need bypassing.');
         }
 
-        // Try multiple bypass methods with timeouts
-        const methods = [
-            { name: 'Service-specific bypass', method: () => this.withTimeout(this.extractFromShortener(url), 8000) },
-            { name: 'HTML content parsing', method: () => this.withTimeout(this.extractFromHTML(url), 6000) },
-            { name: 'Redirect following', method: () => this.withTimeout(this.followRedirects(url), 5000) },
-            { name: 'Proxy bypass', method: () => this.withTimeout(this.useProxyBypass(url), 4000) }
-        ];
+        // Try multiple bypass methods with optimized timeouts for bit.ly
+        const targetUrl = new URL(url);
+        const targetDomain = targetUrl.hostname.toLowerCase();
+        let methods;
+        
+        if (targetDomain.includes('bit.ly')) {
+            // Optimized method order for bit.ly links
+            methods = [
+                { name: 'Service-specific bypass', method: () => this.withTimeout(this.extractFromShortener(url), 10000) },
+                { name: 'Proxy bypass', method: () => this.withTimeout(this.useProxyBypass(url), 8000) },
+                { name: 'Redirect following', method: () => this.withTimeout(this.followRedirects(url), 6000) },
+                { name: 'HTML content parsing', method: () => this.withTimeout(this.extractFromHTML(url), 5000) }
+            ];
+        } else {
+            // Default method order for other links
+            methods = [
+                { name: 'Service-specific bypass', method: () => this.withTimeout(this.extractFromShortener(url), 8000) },
+                { name: 'HTML content parsing', method: () => this.withTimeout(this.extractFromHTML(url), 6000) },
+                { name: 'Redirect following', method: () => this.withTimeout(this.followRedirects(url), 5000) },
+                { name: 'Proxy bypass', method: () => this.withTimeout(this.useProxyBypass(url), 4000) }
+            ];
+        }
 
         let lastError = null;
 
@@ -233,54 +248,96 @@ class LinkBypassPro {
     }
 
     async followRedirects(url, maxRedirects = 10) {
-        // First try direct fetch approach (works for many redirects)
-        try {
-            const response = await fetch(url, {
-                method: 'HEAD',
-                redirect: 'manual',
-                mode: 'no-cors'
-            });
-            
-            // Check if there's a location header (redirect)
-            const location = response.headers.get('location');
-            if (location) {
-                return this.resolveUrl(location, url);
+        console.log('Following redirects for:', url);
+        
+        // Method 1: Try multiple CORS proxy services
+        const proxies = [
+            `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+            `https://cors-anywhere.herokuapp.com/${url}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+        ];
+
+        for (const proxyUrl of proxies) {
+            try {
+                console.log('Trying proxy:', proxyUrl.split('?')[0]);
+                const response = await fetch(proxyUrl, {
+                    redirect: 'follow',
+                    timeout: 4000
+                });
+                
+                if (response.ok && response.url) {
+                    // Extract the final URL after redirects
+                    let finalUrl = response.url;
+                    
+                    // Clean up proxy prefixes
+                    if (finalUrl.includes('corsproxy.io/?')) {
+                        finalUrl = decodeURIComponent(finalUrl.split('corsproxy.io/?')[1]);
+                    } else if (finalUrl.includes('api.codetabs.com/v1/proxy?quest=')) {
+                        finalUrl = decodeURIComponent(finalUrl.split('quest=')[1]);
+                    } else if (finalUrl.includes('cors-anywhere.herokuapp.com/')) {
+                        finalUrl = finalUrl.replace('https://cors-anywhere.herokuapp.com/', '');
+                    } else if (finalUrl.includes('api.allorigins.win/raw?url=')) {
+                        finalUrl = decodeURIComponent(finalUrl.split('url=')[1]);
+                    }
+                    
+                    if (finalUrl !== url && this.isValidUrl(finalUrl)) {
+                        console.log('Successfully followed redirects:', finalUrl);
+                        return finalUrl;
+                    }
+                }
+            } catch (error) {
+                console.warn(`Proxy ${proxyUrl.split('?')[0]} failed:`, error.message);
+                continue;
             }
-        } catch (error) {
-            console.warn('Direct fetch failed, trying alternative methods');
         }
 
-        // Try using a CORS proxy approach
+        // Method 2: Try direct fetch with manual redirect handling
         try {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl, {
+            console.log('Trying manual redirect following');
+            let currentUrl = url;
+            
+            for (let i = 0; i < maxRedirects; i++) {
+                const response = await fetch(currentUrl, {
+                    method: 'HEAD',
+                    redirect: 'manual',
+                    mode: 'cors'
+                });
+                
+                const location = response.headers.get('location');
+                if (location) {
+                    currentUrl = this.resolveUrl(location, currentUrl);
+                    console.log(`Redirect ${i + 1}:`, currentUrl);
+                } else {
+                    // No more redirects
+                    if (currentUrl !== url) {
+                        return currentUrl;
+                    }
+                    break;
+                }
+            }
+        } catch (error) {
+            console.warn('Manual redirect failed:', error.message);
+        }
+
+        // Method 3: Try using fetch with no-cors and examine response
+        try {
+            console.log('Trying no-cors fetch method');
+            const response = await fetch(url, {
+                method: 'GET',
+                mode: 'no-cors',
                 redirect: 'follow'
             });
             
-            if (response.url !== proxyUrl) {
-                // Extract the actual URL from the proxy response
-                const actualUrl = response.url.replace('https://api.allorigins.win/raw?url=', '');
-                return decodeURIComponent(actualUrl);
+            // Even with no-cors, we might get some info
+            if (response.url && response.url !== url) {
+                return response.url;
             }
         } catch (error) {
-            console.warn('Proxy approach failed');
+            console.warn('No-cors method failed:', error.message);
         }
 
-        // Try image loading technique (works for many URLs)
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            const timeout = setTimeout(() => {
-                reject(new Error('Image load timeout'));
-            }, 5000);
-
-            img.onload = img.onerror = () => {
-                clearTimeout(timeout);
-                // Try to extract the final URL through various methods
-                this.tryAlternativeBypass(url).then(resolve).catch(reject);
-            };
-
-            img.src = url;
-        });
+        throw new Error('Unable to follow redirects - CORS restrictions apply');
     }
 
     resolveUrl(relativeUrl, baseUrl) {
@@ -468,31 +525,183 @@ class LinkBypassPro {
     }
 
     async handleBitly(url) {
-        // For bit.ly, we can often just add a '+' to see the preview
+        // Method 1: Try bit.ly preview page with '+'
         try {
             const previewUrl = url + '+';
-            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(previewUrl)}`);
-            const data = await response.json();
-            const html = data.contents;
+            console.log('Trying bit.ly preview method:', previewUrl);
             
-            // Extract the actual URL from bit.ly preview page
-            const patterns = [
-                /long_url["']?\s*:\s*["']([^"']+)["']/i,
-                /<a[^>]+data-long-url\s*=\s*["']([^"']+)["']/i,
-                /window\.location\s*=\s*["']([^"']+)["']/i
+            // Try multiple proxy services
+            const proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(previewUrl)}`,
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(previewUrl)}`,
+                `https://api.allorigins.win/get?url=${encodeURIComponent(previewUrl)}`
             ];
             
-            for (const pattern of patterns) {
-                const match = html.match(pattern);
-                if (match && match[1]) {
-                    return decodeURIComponent(match[1]);
+            for (const proxyUrl of proxies) {
+                try {
+                    const response = await fetch(proxyUrl, { timeout: 3000 });
+                    if (!response.ok) continue;
+                    
+                    let html = '';
+                    if (proxyUrl.includes('allorigins')) {
+                        const data = await response.json();
+                        html = data.contents || '';
+                    } else {
+                        html = await response.text();
+                    }
+                    
+                    // Extract the actual URL from bit.ly preview page
+                    const patterns = [
+                        /long_url["']?\s*:\s*["']([^"']+)["']/i,
+                        /<a[^>]+data-long-url\s*=\s*["']([^"']+)["']/i,
+                        /window\.location\s*=\s*["']([^"']+)["']/i,
+                        /"target_url"\s*:\s*"([^"]+)"/i,
+                        /data-long-url="([^"]+)"/i,
+                        /<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)["']/i
+                    ];
+                    
+                    for (const pattern of patterns) {
+                        const match = html.match(pattern);
+                        if (match && match[1]) {
+                            const extractedUrl = decodeURIComponent(match[1]);
+                            if (this.isValidUrl(extractedUrl) && extractedUrl !== url) {
+                                console.log('Successfully extracted from bit.ly preview:', extractedUrl);
+                                return extractedUrl;
+                            }
+                        }
+                    }
+                } catch (proxyError) {
+                    console.warn('Proxy failed:', proxyError.message);
+                    continue;
                 }
             }
-            
-            throw new Error('Could not extract URL from bit.ly');
         } catch (error) {
-            throw error;
+            console.warn('Preview method failed:', error.message);
         }
+
+        // Method 2: Try direct API approach (bit.ly has a public expand API)
+        try {
+            console.log('Trying bit.ly API method');
+            const expandUrl = `https://api-ssl.bitly.com/v4/expand`;
+            const shortCode = url.split('/').pop();
+            
+            // This is a simplified approach - actual API requires auth
+            // but sometimes works for public links
+            const apiResponse = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(expandUrl)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bitlink_id: `bit.ly/${shortCode}` })
+            });
+            
+            if (apiResponse.ok) {
+                const apiData = await apiResponse.json();
+                if (apiData.long_url) {
+                    console.log('Successfully extracted via API:', apiData.long_url);
+                    return apiData.long_url;
+                }
+            }
+        } catch (error) {
+            console.warn('API method failed:', error.message);
+        }
+
+        // Method 3: Try using unshorten.me service
+        try {
+            console.log('Trying unshorten.me service');
+            const unshortenUrl = `https://unshorten.me/json/${encodeURIComponent(url)}`;
+            const response = await fetch(unshortenUrl);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.resolved_url && data.resolved_url !== url) {
+                    console.log('Successfully extracted via unshorten.me:', data.resolved_url);
+                    return data.resolved_url;
+                }
+            }
+        } catch (error) {
+            console.warn('Unshorten.me failed:', error.message);
+        }
+
+        // Method 4: Try JavaScript redirect following
+        try {
+            console.log('Trying JavaScript redirect method');
+            return await this.followBitlyRedirects(url);
+        } catch (error) {
+            console.warn('JavaScript redirect failed:', error.message);
+        }
+
+        throw new Error('All bit.ly bypass methods failed. The link might be private, expired, or heavily protected.');
+    }
+
+    async followBitlyRedirects(url) {
+        return new Promise((resolve, reject) => {
+            // Create a hidden iframe to follow redirects
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.position = 'absolute';
+            iframe.style.left = '-9999px';
+            iframe.style.width = '1px';
+            iframe.style.height = '1px';
+            
+            let resolved = false;
+            const timeout = setTimeout(() => {
+                if (!resolved) {
+                    document.body.removeChild(iframe);
+                    reject(new Error('Timeout following redirects'));
+                }
+            }, 5000);
+            
+            iframe.onload = () => {
+                try {
+                    // Try to read the iframe location (works if same-origin after redirect)
+                    const finalUrl = iframe.contentWindow.location.href;
+                    if (finalUrl && finalUrl !== url && finalUrl !== 'about:blank') {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        document.body.removeChild(iframe);
+                        resolve(finalUrl);
+                        return;
+                    }
+                } catch (e) {
+                    // Cross-origin access blocked
+                }
+                
+                // Fallback: try to extract from iframe document
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const metaRefresh = doc.querySelector('meta[http-equiv="refresh"]');
+                    if (metaRefresh) {
+                        const content = metaRefresh.getAttribute('content');
+                        const urlMatch = content.match(/url=(.+)/i);
+                        if (urlMatch) {
+                            resolved = true;
+                            clearTimeout(timeout);
+                            document.body.removeChild(iframe);
+                            resolve(urlMatch[1]);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // Document access blocked
+                }
+                
+                if (!resolved) {
+                    clearTimeout(timeout);
+                    document.body.removeChild(iframe);
+                    reject(new Error('Could not follow redirects'));
+                }
+            };
+            
+            iframe.onerror = () => {
+                if (!resolved) {
+                    clearTimeout(timeout);
+                    document.body.removeChild(iframe);
+                    reject(new Error('Failed to load page'));
+                }
+            };
+            
+            document.body.appendChild(iframe);
+            iframe.src = url;
+        });
     }
 
     async handleTinyUrl(url) {
@@ -703,36 +912,105 @@ class LinkBypassPro {
     }
 
     async useProxyBypass(url) {
-        // Use CORS proxy services to bypass
-        const proxies = [
-            'https://api.allorigins.win/get?url=',
-            'https://cors-anywhere.herokuapp.com/',
-            'https://thingproxy.freeboard.io/fetch/'
+        console.log('Using proxy bypass methods');
+        
+        // Enhanced proxy list with multiple reliable services
+        const corsProxies = [
+            { 
+                url: 'https://corsproxy.io/?', 
+                format: (link) => `https://corsproxy.io/?${encodeURIComponent(link)}`,
+                extract: (response) => response.url
+            },
+            { 
+                url: 'https://api.codetabs.com/v1/proxy?quest=', 
+                format: (link) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(link)}`,
+                extract: (response) => response.url
+            },
+            { 
+                url: 'https://api.allorigins.win/raw?url=', 
+                format: (link) => `https://api.allorigins.win/raw?url=${encodeURIComponent(link)}`,
+                extract: (response) => response.url
+            }
         ];
 
-        for (const proxy of proxies) {
+        for (const proxy of corsProxies) {
             try {
-                const response = await fetch(proxy + encodeURIComponent(url), {
-                    timeout: 5000
+                console.log(`Trying proxy: ${proxy.url}`);
+                const proxyUrl = proxy.format(url);
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    redirect: 'follow',
+                    timeout: 4000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
                 });
                 
-                if (response.redirected && response.url !== url) {
-                    return response.url;
-                }
-                
-                const data = await response.text();
-                // Try to extract URL from the response
-                const extractedUrl = this.extractUrlFromText(data);
-                if (extractedUrl) {
-                    return extractedUrl;
+                if (response.ok) {
+                    // Check if we got redirected to a different URL
+                    let finalUrl = proxy.extract(response);
+                    
+                    // Clean up proxy prefixes from the URL
+                    if (finalUrl.includes(proxy.url)) {
+                        finalUrl = finalUrl.split(proxy.url)[1];
+                        finalUrl = decodeURIComponent(finalUrl);
+                    }
+                    
+                    if (finalUrl && finalUrl !== url && this.isValidUrl(finalUrl)) {
+                        console.log(`Proxy success: ${finalUrl}`);
+                        return finalUrl;
+                    }
+                    
+                    // If no redirect, try to extract from content
+                    const text = await response.text();
+                    const extractedUrl = this.extractUrlFromText(text);
+                    if (extractedUrl && extractedUrl !== url) {
+                        console.log(`Extracted from content: ${extractedUrl}`);
+                        return extractedUrl;
+                    }
                 }
             } catch (error) {
-                console.warn(`Proxy ${proxy} failed:`, error);
+                console.warn(`Proxy ${proxy.url} failed:`, error.message);
                 continue;
             }
         }
 
-        throw new Error('All proxy methods failed');
+        // Try unshorten.me as a specialized service
+        try {
+            console.log('Trying unshorten.me service');
+            const unshortenUrl = `https://unshorten.me/json/${encodeURIComponent(url)}`;
+            const response = await fetch(unshortenUrl, { timeout: 3000 });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.resolved_url && data.resolved_url !== url) {
+                    console.log(`Unshorten.me success: ${data.resolved_url}`);
+                    return data.resolved_url;
+                }
+            }
+        } catch (error) {
+            console.warn('Unshorten.me failed:', error.message);
+        }
+
+        // Try expanding-url.com service
+        try {
+            console.log('Trying expanding-url.com service');
+            const expandUrl = `https://api.expanding-url.com/v1/expand?url=${encodeURIComponent(url)}`;
+            const response = await fetch(expandUrl, { timeout: 3000 });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.url && data.url !== url) {
+                    console.log(`Expanding-url.com success: ${data.url}`);
+                    return data.url;
+                }
+            }
+        } catch (error) {
+            console.warn('Expanding-url.com failed:', error.message);
+        }
+
+        throw new Error('All proxy bypass methods failed');
     }
 
     extractUrlFromText(text) {
