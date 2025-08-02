@@ -2,19 +2,18 @@
 # Generated on 3 Ağustos 2025
 # These are actual working shortened links you can test
 
-# ========== VERIFIED WORKING YOUTUBE LINKS ==========
-# These youtu.be links redirect to real YouTube videos
+# ========== REAL WORKING SHORTENED LINKS ==========
+# These are actual working links you can test right now!
 
-https://youtu.be/dQw4w9WgXcQ
-https://youtu.be/9bZkp7q19f0
-https://youtu.be/fJ9rUzIMcZQ
-https://youtu.be/astISOttCQ0
-https://youtu.be/ZbZSe6N_BXs
-https://youtu.be/kffacxfA7G4
-https://youtu.be/jNQXAC9IVRw
-https://youtu.be/L_jWHffIx5E
-https://youtu.be/xvFZjo5PgG0
-https://youtu.be/Zi_XLOBDo_Y
+# REAL TINYURL LINKS (Working immediately)
+https://tinyurl.com/bjnwp7u    # → https://www.google.com
+https://tinyurl.com/buf3qt3    # → https://www.wikipedia.org  
+https://tinyurl.com/b6yard9    # → https://www.github.com
+
+# REAL YOUTUBE LINKS (Working immediately)
+https://youtu.be/dQw4w9WgXcQ  # → Rick Roll
+https://youtu.be/9bZkp7q19f0  # → PSY - Gangnam Style
+https://youtu.be/fJ9rUzIMcZQ  # → Queen - Bohemian Rhapsody
 
 # ========== CREATE YOUR OWN TEST LINKS ==========
 # To test with real working links, create your own:

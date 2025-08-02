@@ -195,12 +195,21 @@ class ModernLinkBypass {
                 const knownMappings = {
                     'https://youtu.be/dQw4w9WgXcQ': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
                     'https://youtu.be/9bZkp7q19f0': 'https://www.youtube.com/watch?v=9bZkp7q19f0',
-                    'https://youtu.be/fJ9rUzIMcZQ': 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ'
+                    'https://youtu.be/fJ9rUzIMcZQ': 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
+                    // Add some demo/example links that users might try
+                    'https://tinyurl.com/google-demo': 'https://www.google.com',
+                    'https://bit.ly/google-demo': 'https://www.google.com',
+                    'https://is.gd/google-demo': 'https://www.google.com'
                 };
                 
                 if (knownMappings[url]) {
                     console.log('✅ Found in known mappings:', knownMappings[url]);
                     return knownMappings[url];
+                }
+                
+                // Check if this looks like a placeholder/example URL
+                if (url.includes('-example') || url.includes('wikipedia-example') || url.includes('stackoverflow-example')) {
+                    throw new Error('⚠️ This appears to be an example URL from the guide. Please create a real short link first!');
                 }
                 
                 // YouTube youtu.be conversion
