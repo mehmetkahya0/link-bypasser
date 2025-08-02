@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkBypass Pro - Fast & Secure Link Bypasser</title>
+    <meta name="description" content="Fast, secure, and reliable link bypassing service. Get direct access to your content without waiting through ads and redirects.">
+    <meta name="keywords" content="link bypasser, URL shortener bypass, redirect bypass, short link, bit.ly bypass">
+    <meta name="author" content="LinkBypass Pro">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0idXJsKCNncmFkaWVudDBfbGluZWFyXzFfMSkiLz4KPHA7fHRoIGQ9Ik05LjMzMzMzIDE2TDIyLjY2NjcgMTYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHA7fHRoIGQ9Ik0xMy4zMzMzIDE3LjMzMzNMMTQuNjY2NyAxNkwxMy4zMzMzIDE0LjY2NjciIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xOC42NjY3IDE3LjMzMzNMMjAgMTZMMTguNjY2NyAxNC42NjY3IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyXzFfMSIgeDE9IjAiIHkxPSIwIiB4Mj0iMzIiIHkyPSIzMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjNjM2NkYxIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUNGNiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme colors -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="msapplication-TileColor" content="#6366f1">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="LinkBypass Pro - Fast & Secure Link Bypasser">
+    <meta property="og:description" content="Fast, secure, and reliable link bypassing service. Get direct access to your content without waiting through ads and redirects.">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="LinkBypass Pro - Fast & Secure Link Bypasser">
+    <meta property="twitter:description" content="Fast, secure, and reliable link bypassing service. Get direct access to your content without waiting through ads and redirects.">
+    <meta property="twitter:image" content="">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-link"></i>
+                <span>LinkBypass Pro</span>
+            </div>
+            <nav class="nav">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Bypass Short Links
+                    <span class="gradient-text">Instantly</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Fast, secure, and reliable link bypassing service. Get direct access to your content without waiting through ads and redirects.
+                </p>
+                
+                <!-- Main Bypass Form -->
+                <div class="bypass-form">
+                    <div class="input-container">
+                        <input 
+                            type="url" 
+                            id="linkInput" 
+                            placeholder="Paste your short link here..."
+                            class="link-input"
+                        >
+                        <button id="bypassBtn" class="bypass-btn">
+                            <i class="fas fa-rocket"></i>
+                            Bypass Link
+                        </button>
+                    </div>
+                    <div class="form-footer">
+                        <div class="supported-sites">
+                            <span>Supports:</span>
+                            <div class="site-tags">
+                                <span class="tag">bit.ly</span>
+                                <span class="tag">tinyurl.com</span>
+                                <span class="tag">short.link</span>
+                                <span class="tag">t.co</span>
+                                <span class="tag">+50 more</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state hidden">
+                    <div class="loading-spinner"></div>
+                    <p>Bypassing link...</p>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="result-section hidden">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <i class="fas fa-check-circle success-icon"></i>
+                            <h3>Link Successfully Bypassed!</h3>
+                        </div>
+                        <div class="result-content">
+                            <div class="original-link">
+                                <label>Original Link:</label>
+                                <div class="link-display" id="originalLink"></div>
+                            </div>
+                            <div class="bypassed-link">
+                                <label>Direct Link:</label>
+                                <div class="link-display" id="bypassedLink">
+                                    <span class="link-text"></span>
+                                    <button class="copy-btn" id="copyBtn">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="result-actions">
+                            <button id="openLinkBtn" class="action-btn primary">
+                                <i class="fas fa-external-link-alt"></i>
+                                Open Link
+                            </button>
+                            <button id="newBypassBtn" class="action-btn secondary">
+                                <i class="fas fa-plus"></i>
+                                Bypass Another
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-card">
+                        <div class="error-header">
+                            <i class="fas fa-exclamation-triangle error-icon"></i>
+                            <h3>Bypass Failed</h3>
+                        </div>
+                        <div class="error-content">
+                            <p id="errorMessage">Unable to bypass this link. Please check the URL and try again.</p>
+                        </div>
+                        <button id="retryBtn" class="action-btn primary">
+                            <i class="fas fa-redo"></i>
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="section-content">
+                <h2 class="section-title">Why Choose LinkBypass Pro?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Bypass links instantly with our optimized algorithms and fast processing.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>100% Secure</h3>
+                        <p>Your privacy is protected. We don't store or track your browsing data.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>Universal Support</h3>
+                        <p>Works with 50+ popular URL shortening services worldwide.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Mobile Friendly</h3>
+                        <p>Fully responsive design that works perfectly on all devices.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats">
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="1000000">0</div>
+                        <div class="stat-label">Links Bypassed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="50">0</div>
+                        <div class="stat-label">Supported Services</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="99">0</div>
+                        <div class="stat-label">Success Rate %</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="24">0</div>
+                        <div class="stat-label">Hours Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-link"></i>
+                        <span>LinkBypass Pro</span>
+                    </div>
+                    <p>Fast, secure, and reliable link bypassing service for everyone.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#api">API Docs</a></li>
+                        <li><a href="#status">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 LinkBypass Pro. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
