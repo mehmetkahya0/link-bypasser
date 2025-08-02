@@ -543,6 +543,12 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 0.5rem;
+    transition: transform 0.3s ease;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-number:hover {
+    transform: scale(1.1);
 }
 
 .stat-label {

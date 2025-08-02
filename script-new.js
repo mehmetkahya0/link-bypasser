@@ -671,9 +671,79 @@ class ModernLinkBypass {
     }
 }
 
+// Stats Animation Class
+class StatsAnimator {
+    constructor() {
+        this.stats = document.querySelectorAll('.stat-number');
+        this.hasAnimated = false;
+        this.setupIntersectionObserver();
+    }
+
+    setupIntersectionObserver() {
+        const options = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.hasAnimated) {
+                    this.animateStats();
+                    this.hasAnimated = true;
+                }
+            });
+        }, options);
+
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+    }
+
+    animateStats() {
+        this.stats.forEach((stat, index) => {
+            const targetValue = parseInt(stat.getAttribute('data-count'));
+            const duration = 2000; // 2 seconds
+            const startTime = Date.now();
+            
+            // Add slight delay for each stat
+            setTimeout(() => {
+                const animateNumber = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Use easeOutQuart for smooth animation
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentValue = Math.floor(targetValue * easeOutQuart);
+                    
+                    stat.textContent = this.formatNumber(currentValue);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateNumber);
+                    } else {
+                        stat.textContent = this.formatNumber(targetValue);
+                    }
+                };
+                
+                animateNumber();
+            }, index * 200); // 200ms delay between each stat
+        });
+    }
+
+    formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
+}
+
 // Initialize the system when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initializing Modern Link Bypass System...');
     window.linkBypass = new ModernLinkBypass();
+    window.statsAnimator = new StatsAnimator();
     console.log('✅ System ready!');
 });
